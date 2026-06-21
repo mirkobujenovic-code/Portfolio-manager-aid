@@ -6,7 +6,7 @@
 
 | Data | Crescita Azure (% YoY) | Margine operativo (%) | Crescita PBP (% YoY) | P/E forward | Raccom. | Conviction (1-10) | Memo |
 |------|------------------------|-----------------------|----------------------|-------------|---------|-------------------|------|
-| | | | | | | | |
+| 2026-06-21 | 40 (39 cc) | 46.3 | 17 (13 cc) | ~21-23x (da chiarire) | MANTIENI | 7 | `memos/MSFT_2026-06-21.md` |
 
 ---
 

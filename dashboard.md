@@ -7,7 +7,7 @@ vale finché non rilanci la revisione.
 | Ticker | Ultima revisione | Raccom. | Confidenza | Conviction | Traiettoria | Memo |
 |--------|------------------|---------|------------|------------|-------------|------|
 | _ACME (esempio)_ | 2026-06-21 | RIDUCI | Media | 5/10 ↓ | Margine in erosione 3 trim. | `memos/ACME_2026-06-21.md` |
-| MSFT | — (tesi creata, mai rivalutato) | — | — | 7/10 → | Nessuna revisione ancora | — |
+| MSFT | 2026-06-21 | MANTIENI | Media-Alta | 7/10 → | Tesi validata: Azure +40%, Copilot >20M seat. Watch capex/gross margin | `memos/MSFT_2026-06-21.md` |
 | | | | | | | |
 
 ---
