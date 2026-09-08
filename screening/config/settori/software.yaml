@@ -1,0 +1,85 @@
+# Sottosettore SOFTWARE (US)
+# Fonte: screening/SPECIFICHE.md §5 e §6 (sessione 18-08-2026)
+# Stato: NON CALIBRATE. Il funnel reale del 18-08-2026 ha prodotto ZERO nomi
+# pronti (69 -> 38 -> 16 -> 6 -> 2 -> 0): vedi sectors/software.md, correzione #1.
+
+nome: Software
+industrie_fmp:
+  - "Software - Application"
+  - "Software - Infrastructure"
+etf_riferimento: IGV
+
+soglie:
+  margine_lordo_min: 0.65
+  rule_of_40_min: 30
+  # OBBLIGATORIO: al netto della SBC. Con la versione lorda Zscaler segnava
+  # 53,4 (promosso) invece di 28,8 (bocciato). Vedi SPECIFICHE.md §4.8.
+  rule_of_40_al_netto_sbc: true
+  sbc_su_ricavi_max: 0.15
+  debito_netto_ebitda_max: 2.0
+
+percentile_nel_bucket:
+  metriche: [roic, margine_lordo, conversione_fcf, stabilita_margini]
+  quantile_min: 0.60            # top 40%
+  metriche_da_superare: 3
+
+# --- AGGIUNTE PROPOSTE (non nella specifica originale, da ratificare) ---
+
+retention:
+  # La NRR e' probabilmente la singola metrica di qualita' piu' predittiva nel
+  # software, ed e' assente dalla specifica. Non e' nei feed gratuiti ma e' in
+  # ogni presentazione trimestrale: va compilata a mano in fase di analisi.
+  fonte: manuale_da_trimestrale
+  nrr_min: 1.05
+  nrr_eccellente: 1.15
+  blocca_se_mancante: false     # marca "giallo", non elimina
+
+catalizzatore:
+  # Qualita' + sconto possono restare tali per anni. Lo stadio 6 della specifica
+  # (stabilizzazione) e' timing tecnico, non una ragione fondamentale di re-rating.
+  obbligatorio_per_promuovere_a_candidato: true
+  orizzonte_mesi_max: 18
+  senza_catalizzatore: monitora  # mai "candidato"
+
+bucket:
+  # ASSE DI SEGMENTAZIONE del software: esposizione alla disruption AI.
+  # (Nei semiconduttori sara' il ciclo, nell'healthcare la scadenza brevetti.)
+  #
+  # CORREZIONE PROPOSTA: la specifica §6 assegna i bucket via liste di ticker
+  # hardcoded. Contraddice la lezione piu' importante della §11 ("universo
+  # incompleto e invisibile: cio' che manca non compare da nessuna parte"):
+  # un titolo non in lista resta non classificato e sparisce in silenzio.
+  # Le liste vanno usate come SEED/override, non come meccanismo primario.
+  metodo: regole_poi_override_lista
+  non_classificati: giallo      # mai scartati in silenzio
+
+  regole:
+    # Le tre domande fattuali della specifica §6, applicate come regole.
+    domande:
+      - id: pricing_per_postazione
+        testo: "Il pricing scala col numero di dipendenti del cliente?"
+        si_aumenta_esposizione: true
+      - id: output_generabile_da_modello
+        testo: "L'output e' generabile da un modello?"
+        si_aumenta_esposizione: true
+      - id: valore_nei_dati_proprietari
+        testo: "Il valore sta nei dati proprietari o nel software?"
+        si_riduce_esposizione: true
+
+  bassa:
+    nota: "Output non generabile da un modello, lock-in tecnico."
+    parole_chiave: [EDA, semiconductor design, security, firewall, observability,
+                    database, infrastructure, identity, network]
+    seed: [SNPS, CDNS, PANW, CRWD, ZS, CHKP, OKTA, GEN, FFIV, DDOG, DT, MDB,
+           SNOW, NTNX, FROG, DOCN, FTNT, NET, RBRK]
+  media:
+    nota: "SaaS verticale, dati proprietari, workflow regolamentato."
+    seed: [INTU, VEEV, MANH, TRMB, PTC, ADSK, ADBE, JKHY, SSNC, IOT, TOST,
+           ORCL, PLTR, TYL, GWRE]
+  alta:
+    nota: "Licenza per postazione, output replicabile da un modello."
+    seed: [CRM, NOW, HUBS, ZM, DOCU, TEAM, TWLO, U, APP, WDAY]
+    # Non escluso: e' dove si concentra la dislocazione maggiore. Barra piu'
+    # alta — pricing non a postazione, OPPURE crescita che accelera nonostante
+    # la narrativa, OPPURE evidenza che l'AI aumenti l'uso del prodotto.
+    barra_aggiuntiva: true

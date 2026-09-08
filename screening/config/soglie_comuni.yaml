@@ -1,0 +1,58 @@
+# Soglie invarianti — valide per ogni settore
+# Fonte: screening/SPECIFICHE.md §5 (sessione di progettazione 18-08-2026)
+# Stato: NON CALIBRATE. Vedi SPECIFICHE.md §12 prima di fidarsi di questi numeri.
+
+universo:
+  market_cap_min: 10_000_000_000
+  volume_medio_min: 500_000
+  paesi: [US]
+  borse: [NYSE, NASDAQ]
+  escludi_etf: true
+  escludi_fondi: true
+  escludi_adr: true
+  anni_storia_min: 3
+
+dislocazione:
+  # LOGICA: le tre forme sono in OR — "almeno una forma oltre il 20%".
+  # La specifica §5 le elencava come soglie piatte, lasciando ambiguo se
+  # fossero in AND; la metodologia della dashboard chiarisce che sono
+  # alternative. Esplicitato qui perche' in AND il funnel andrebbe a zero.
+  modalita: almeno_una
+  forme:
+    a_drawdown_assoluto:
+      drawdown_min: 0.20
+    b_sottoperformance_relativa:
+      drawdown_residuo_min: 0.20
+    c_compressione_multiplo:
+      percentile_multiplo_max: 25
+
+  drawdown_allarme: 0.50        # oltre: segnala rottura strutturale, non occasione
+
+  quota_de_rating:
+    # PROPOSTA DI CORREZIONE (non applicata, da ratificare):
+    # declassare da soglia a etichetta diagnostica.
+    # SPECIFICHE.md §11 dichiara che la metrica perde potere discriminante
+    # quando l'intero settore supera la soglia — cioe' la situazione attuale
+    # del software sotto la narrativa AI. Usarla come cancello elimina per un
+    # fattore comune a tutti, non per un difetto del singolo titolo.
+    usa_come_cancello: false
+    soglia_riferimento: 0.70
+    allarme_se_settore_intero_supera: true
+
+qualita_invarianti:
+  fcf_positivo_anni_su_5: 4
+  copertura_interessi_min: 4.0
+  debito_netto_ebitda_max: 3.0
+  crescita_ricavi_min: 0.0      # decelerazione si', contrazione no
+  diluizione_3y_max: 0.06       # per qualsiasi causa: SBC, M&A, aumenti di capitale
+
+  margine_lordo_trend:
+    # PROPOSTA DI CORREZIONE alla regola "trimestri_margine_lordo_non_in_calo: 6".
+    # Il binario "mai in calo per 6 trimestri" e' fragile: un solo trimestre a
+    # -10bp lo fa fallire. E la specifica stessa osserva che i costi di inferenza
+    # AI stanno comprimendo i margini lordi di TUTTO il settore: cosi' com'e', il
+    # cancello elimina il settore per un fenomeno sistemico.
+    metodo: pendenza_regressione     # invece di "mai in calo"
+    trimestri: 8
+    tolleranza_pendenza_bp_per_trimestre: -25
+    confronta_con_mediana_settore: true
