@@ -1,0 +1,455 @@
+<title>Plancia del Comitato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F1F4F7;
+    --surface:#FFFFFF;
+    --surface-2:#F7F9FB;
+    --ink:#111820;
+    --ink-soft:#57666F;
+    --ink-faint:#8496A1;
+    --line:#DCE4EA;
+    --line-strong:#C3D0D9;
+    --accent:#0E6A72;
+    --accent-soft:#DCEDEE;
+    --ok:#1E7A4D;
+    --ok-soft:#DFF0E6;
+    --warn:#9A6206;
+    --warn-soft:#F7EAD3;
+    --crit:#AB2A20;
+    --crit-soft:#F7E0DD;
+    --idle:#7C8B95;
+    --idle-soft:#E7ECEF;
+    --shadow:0 1px 2px rgba(17,24,32,.05), 0 8px 24px -16px rgba(17,24,32,.28);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0C1216;
+      --surface:#141C22;
+      --surface-2:#19232A;
+      --ink:#E4EDF2;
+      --ink-soft:#9BABB6;
+      --ink-faint:#71838F;
+      --line:#243139;
+      --line-strong:#31424C;
+      --accent:#54B4BC;
+      --accent-soft:#123336;
+      --ok:#5CBB88;
+      --ok-soft:#12291E;
+      --warn:#D79B33;
+      --warn-soft:#2E2412;
+      --crit:#E27C72;
+      --crit-soft:#301A18;
+      --idle:#788994;
+      --idle-soft:#1C262C;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0C1216;
+    --surface:#141C22;
+    --surface-2:#19232A;
+    --ink:#E4EDF2;
+    --ink-soft:#9BABB6;
+    --ink-faint:#71838F;
+    --line:#243139;
+    --line-strong:#31424C;
+    --accent:#54B4BC;
+    --accent-soft:#123336;
+    --ok:#5CBB88;
+    --ok-soft:#12291E;
+    --warn:#D79B33;
+    --warn-soft:#2E2412;
+    --crit:#E27C72;
+    --crit-soft:#301A18;
+    --idle:#788994;
+    --idle-soft:#1C262C;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 24px 72px;display:flex;flex-direction:column;gap:40px}
+
+  .eyebrow{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+
+  /* ---------- header ---------- */
+  header{display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--line);padding-bottom:28px}
+  .masthead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:16px}
+  h1{
+    font-size:clamp(28px,4vw,40px);font-weight:600;letter-spacing:-.02em;margin:0;
+    text-wrap:balance;
+  }
+  .standfirst{
+    font-family:"IBM Plex Serif",Georgia,serif;font-size:16px;color:var(--ink-soft);
+    max-width:64ch;margin:0;
+  }
+  .stamp{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-soft);
+    text-align:right;line-height:1.7;
+  }
+  .stamp b{color:var(--ink);font-weight:500}
+
+  /* ---------- pipeline ---------- */
+  .pipeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:2px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .stage{background:var(--surface);padding:16px 16px 18px;display:flex;flex-direction:column;gap:9px;min-height:132px}
+  .stage.live{background:var(--surface)}
+  .stage-n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-faint);letter-spacing:.08em}
+  .stage-name{font-weight:600;font-size:14.5px;line-height:1.35}
+  .stage-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin-top:auto}
+  .chip{
+    display:inline-flex;align-items:center;gap:5px;align-self:flex-start;
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 8px;border-radius:2px;font-weight:500;
+  }
+  .chip.on{background:var(--ok-soft);color:var(--ok)}
+  .chip.off{background:var(--idle-soft);color:var(--idle)}
+  .chip::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+
+  /* ---------- sections ---------- */
+  section{display:flex;flex-direction:column;gap:18px}
+  .sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;justify-content:space-between}
+  h2{font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .sec-note{font-size:13px;color:var(--ink-soft);max-width:62ch;margin:0}
+
+  /* ---------- position ---------- */
+  .position{background:var(--surface);border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow)}
+  .pos-top{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;justify-content:space-between;
+    padding:20px 22px;border-bottom:1px solid var(--line)}
+  .ident{display:flex;flex-direction:column;gap:3px}
+  .ticker{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+  .coname{font-size:13px;color:var(--ink-soft)}
+  .verdict{display:flex;flex-wrap:wrap;gap:22px;align-items:center}
+  .vblock{display:flex;flex-direction:column;gap:4px}
+  .vlabel{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+  .vmain{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .pill{
+    display:inline-block;padding:5px 11px;border-radius:2px;font-size:13px;font-weight:600;
+    background:var(--ok-soft);color:var(--ok);
+  }
+  .conv{display:flex;align-items:baseline;gap:7px}
+  .conv-n{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  .conv-d{font-size:13px;color:var(--ink-faint)}
+  .arrow{color:var(--ok);font-size:15px}
+
+  /* ---------- meters ---------- */
+  .meters{padding:22px;display:flex;flex-direction:column;gap:22px}
+  .meters-intro{font-size:13px;color:var(--ink-soft);margin:0;max-width:66ch}
+  .meter{display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:baseline}
+  .m-name{font-size:13.5px;font-weight:500}
+  .m-name span{color:var(--ink-faint);font-weight:400}
+  .m-val{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+  .track{
+    grid-column:1/-1;position:relative;height:26px;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:2px;margin-top:2px;
+  }
+  .fill{position:absolute;top:0;bottom:0;left:0;background:var(--accent-soft);border-right:2px solid var(--accent)}
+  .tick{position:absolute;top:-1px;bottom:-1px;width:1px}
+  .tick.soglia{background:var(--warn)}
+  .tick.kill{background:var(--crit)}
+  .tick b{
+    position:absolute;top:calc(100% + 4px);left:0;transform:translateX(-50%);
+    font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:500;white-space:nowrap;
+  }
+  .tick.soglia b{color:var(--warn)}
+  .tick.kill b{color:var(--crit)}
+  .m-legend{grid-column:1/-1;margin-top:16px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint)}
+
+  /* ---------- open points ---------- */
+  .open{border-top:1px solid var(--line);padding:20px 22px;display:flex;flex-direction:column;gap:12px;background:var(--surface-2)}
+  .open ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+  .open li{display:grid;grid-template-columns:auto 1fr;gap:11px;font-size:13.5px;line-height:1.5}
+  .dot{width:6px;height:6px;border-radius:50%;margin-top:8px}
+  .dot.warn{background:var(--warn)}
+  .dot.info{background:var(--accent)}
+  .open b{font-weight:600}
+
+  /* ---------- tables ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
+  th{
+    text-align:left;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--ink-faint);font-weight:500;
+    padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  td.mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:2px 7px;border-radius:2px;white-space:nowrap}
+  .tag.crit{background:var(--crit-soft);color:var(--crit)}
+  .tag.warn{background:var(--warn-soft);color:var(--warn)}
+
+  .placeholder{
+    border:1px dashed var(--line-strong);border-radius:4px;padding:18px 20px;background:transparent;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .placeholder .eyebrow{color:var(--warn)}
+  .placeholder p{margin:0;font-size:13.5px;color:var(--ink-soft);max-width:68ch}
+
+  /* ---------- criteria ---------- */
+  .criteria{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:14px}
+  .crit-card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px 18px;display:flex;flex-direction:column;gap:7px}
+  .crit-card h3{margin:0;font-size:13.5px;font-weight:600}
+  .crit-card p{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .crit-val{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--accent);font-weight:500}
+
+  footer{border-top:1px solid var(--line);padding-top:24px;display:flex;flex-direction:column;gap:10px}
+  footer p{margin:0;font-size:13px;color:var(--ink-soft);max-width:70ch}
+  code{font-family:"IBM Plex Mono",monospace;font-size:.92em;background:var(--surface-2);
+    border:1px solid var(--line);padding:1px 5px;border-radius:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="masthead">
+      <div>
+        <p class="eyebrow">Comitato di investimento · settore tecnologico</p>
+        <h1>Plancia del Comitato</h1>
+      </div>
+      <div class="stamp">
+        aggiornata <b>2026-09-08</b><br>
+        titoli con tesi <b>1</b> · candidati <b>0</b>
+      </div>
+    </div>
+    <p class="standfirst">Stato della pipeline di ricerca, dall'universo investibile alla posizione
+      con tesi. Ogni riquadro riflette i file del repo: la plancia non interroga il mercato in
+      tempo reale, si rigenera quando lanci una revisione.</p>
+  </header>
+
+  <!-- PIPELINE -->
+  <section>
+    <div class="sec-head">
+      <h2>Pipeline</h2>
+      <p class="sec-note">Le fasi 1-4 sono il progetto che hai descritto e non esistono ancora nel
+        repo. La fase 5 è l'unica costruita e funzionante.</p>
+    </div>
+    <div class="pipeline">
+      <div class="stage">
+        <div class="stage-n">FASE 1</div>
+        <div class="stage-name">Universo investibile</div>
+        <span class="chip off">da costruire</span>
+        <div class="stage-desc">USA · cap &gt; $10B · volume &gt; 500k</div>
+      </div>
+      <div class="stage">
+        <div class="stage-n">FASE 2</div>
+        <div class="stage-name">Screening di settore</div>
+        <span class="chip off">da costruire</span>
+        <div class="stage-desc">Criteri specifici del sottosettore software</div>
+      </div>
+      <div class="stage">
+        <div class="stage-n">FASE 3</div>
+        <div class="stage-name">Filtro contrarian</div>
+        <span class="chip off">da costruire</span>
+        <div class="stage-desc">Solo forti dislocazioni dai massimi</div>
+      </div>
+      <div class="stage">
+        <div class="stage-n">FASE 4</div>
+        <div class="stage-name">Analisi dell'agente</div>
+        <span class="chip off">da costruire</span>
+        <div class="stage-desc">Contabilità, competitor, multipli, cash flow, macro</div>
+      </div>
+      <div class="stage live">
+        <div class="stage-n">FASE 5</div>
+        <div class="stage-name">Tesi e comitato</div>
+        <span class="chip on">attiva · 1 titolo</span>
+        <div class="stage-desc">Tesi a freddo, tre voci, memoria della traiettoria</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POSIZIONE -->
+  <section>
+    <div class="sec-head">
+      <h2>Posizioni con tesi</h2>
+      <p class="sec-note">Dati reali dal repo — <code>thesis/MSFT.md</code>,
+        <code>data/MSFT.md</code>, <code>memos/MSFT_2026-06-21.md</code>.</p>
+    </div>
+
+    <article class="position">
+      <div class="pos-top">
+        <div class="ident">
+          <div class="ticker">MSFT</div>
+          <div class="coname">Microsoft Corporation · peso target 10% (max 15%)</div>
+        </div>
+        <div class="verdict">
+          <div class="vblock">
+            <span class="vlabel">Raccomandazione</span>
+            <span class="pill">MANTIENI · accumulo misurato</span>
+          </div>
+          <div class="vblock">
+            <span class="vlabel">Conviction</span>
+            <span class="conv"><span class="conv-n">8</span><span class="conv-d">/10</span><span class="arrow">↑</span></span>
+          </div>
+          <div class="vblock">
+            <span class="vlabel">Ultima revisione</span>
+            <span class="vmain">2026-06-21</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="meters">
+        <p class="meters-intro">Ogni ipotesi della tesi contro la sua soglia e il suo kill criterion.
+          La barra è il valore corrente: quanto margine resta prima che la tesi si incrini.</p>
+
+        <div class="meter">
+          <div class="m-name">Crescita Azure <span>· % YoY, cambi costanti</span></div>
+          <div class="m-val">40%</div>
+          <div class="track">
+            <div class="fill" style="width:80%"></div>
+            <div class="tick kill" style="left:30%"><b>kill 15</b></div>
+            <div class="tick soglia" style="left:40%"><b>ipotesi 20</b></div>
+          </div>
+        </div>
+
+        <div class="meter">
+          <div class="m-name">Margine operativo <span>· %</span></div>
+          <div class="m-val">46,3%</div>
+          <div class="track">
+            <div class="fill" style="width:65%"></div>
+            <div class="tick kill" style="left:32%"><b>kill 38</b></div>
+            <div class="tick soglia" style="left:40%"><b>ipotesi 40</b></div>
+          </div>
+        </div>
+
+        <div class="meter">
+          <div class="m-name">Crescita Productivity &amp; Business Processes <span>· % YoY</span></div>
+          <div class="m-val">17%</div>
+          <div class="track">
+            <div class="fill" style="width:68%"></div>
+            <div class="tick kill" style="left:32%"><b>kill 8</b></div>
+            <div class="tick soglia" style="left:40%"><b>ipotesi 10</b></div>
+          </div>
+        </div>
+
+        <div class="meter">
+          <div class="m-name">P/E forward <span>· più basso = meglio</span></div>
+          <div class="m-val">20,5x</div>
+          <div class="track">
+            <div class="fill" style="width:41%"></div>
+            <div class="tick soglia" style="left:76%"><b>ipotesi 38</b></div>
+            <div class="tick kill" style="left:90%"><b>kill 45</b></div>
+          </div>
+          <div class="m-legend">Barra = valore corrente · linea ambra = soglia dell'ipotesi · linea rossa = kill criterion</div>
+        </div>
+      </div>
+
+      <div class="open">
+        <p class="eyebrow">Punti aperti da monitorare</p>
+        <ul>
+          <li><span class="dot warn"></span><span><b>Capex → ROI.</b> ~$190B di capex FY26 contro
+            ~$37B di run-rate AI; gross margin al 67,6%, il più basso dal 2022. È il punto dove la
+            tesi può erodersi lentamente mentre il margine operativo resta alto.</span></li>
+          <li><span class="dot info"></span><span><b>Qualità della crescita Copilot.</b> I seat
+            commerciali totali crescono solo +6%: seguire se accelerano, non solo il dato Copilot
+            isolato (&gt;20M seat, adds +250%).</span></li>
+          <li><span class="dot info"></span><span><b>Prossima revisione.</b> Trimestrale Q4 FY26 —
+            <b>già passata</b>: la revisione in plancia ha 2,5 mesi. Da rilanciare.</span></li>
+        </ul>
+      </div>
+    </article>
+  </section>
+
+  <!-- CANDIDATI / SCARTATI -->
+  <section>
+    <div class="sec-head">
+      <h2>Candidati e scarti</h2>
+      <p class="sec-note">Il registro di cosa è stato escluso e perché — oggi non esiste. Questa è
+        la forma che avrà, non dati reali.</p>
+    </div>
+    <div class="placeholder">
+      <p class="eyebrow">Struttura di esempio · nessun dato reale</p>
+      <p>Dopo il primo <code>/screening software</code> questa tabella conterrà l'esito riga per
+        riga, con il motivo dell'esclusione sempre attribuito a un criterio scritto in
+        <code>sectors/software.md</code> — così tra un anno saprai perché un titolo era fuori.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th><th>Cap.</th><th>Drawdown dai max</th><th>Esito</th><th>Motivo (criterio)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">— — —</td><td class="mono">—</td><td class="mono">—</td>
+            <td><span class="tag warn">in analisi</span></td>
+            <td>Supera lo screening, passa all'agente di settore</td>
+          </tr>
+          <tr>
+            <td class="mono">— — —</td><td class="mono">—</td><td class="mono">—</td>
+            <td><span class="tag crit">scartato</span></td>
+            <td>Drawdown insufficiente — criterio contrarian non soddisfatto</td>
+          </tr>
+          <tr>
+            <td class="mono">— — —</td><td class="mono">—</td><td class="mono">—</td>
+            <td><span class="tag crit">scartato</span></td>
+            <td>Margine lordo sotto la soglia del sottosettore</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PARAMETRI SETTORE -->
+  <section>
+    <div class="sec-head">
+      <h2>Parametri — sottosettore software</h2>
+      <p class="sec-note">La risposta al tuo «tra un anno non mi ricordo più i parametri che ho
+        messo»: vivono in un file versionato, e la plancia li mostra sempre accanto ai risultati.</p>
+    </div>
+    <div class="placeholder">
+      <p class="eyebrow">Da compilare · <code>sectors/software.md</code></p>
+      <p>I quattro riquadri qui sotto sono i contenitori dei criteri, non i tuoi valori: li fissi
+        una volta in intervista, come hai fatto per la tesi MSFT, e da lì in poi ogni screening e
+        ogni scarto citano il criterio esatto.</p>
+    </div>
+    <div class="criteria">
+      <div class="crit-card">
+        <h3>Universo</h3>
+        <div class="crit-val">cap &gt; $10B · vol &gt; 500k</div>
+        <p>Gli unici due parametri che hai già fissato. Mercato USA, azioni ordinarie.</p>
+      </div>
+      <div class="crit-card">
+        <h3>Qualità del business</h3>
+        <div class="crit-val">da definire</div>
+        <p>Margine lordo, margine operativo, regola del 40, retention netta: le soglie tipiche del
+          software che separano un buon business da uno mediocre.</p>
+      </div>
+      <div class="crit-card">
+        <h3>Dislocazione contrarian</h3>
+        <div class="crit-val">da definire</div>
+        <p>Quanto deve essere caduto un titolo per entrare, e su quale finestra. È il filtro che
+          definisce l'intero approccio.</p>
+      </div>
+      <div class="crit-card">
+        <h3>Red flag di esclusione</h3>
+        <div class="crit-val">da definire</div>
+        <p>Diluizione, debito, contabilità aggressiva, concentrazione clienti: cosa scarta un
+          titolo a prescindere dal prezzo.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="eyebrow">Come si aggiorna</p>
+    <p>La plancia è un file HTML nel repo, rigenerato dai file markdown quando lanci
+      <code>/dashboard</code>. Nessun server da tenere acceso, nessuna dipendenza: l'indirizzo
+      resta lo stesso e la pagina mostra sempre l'ultimo stato salvato dal comitato.</p>
+  </footer>
+
+</div>
