@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screening · Software US large cap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EDF0; --surface:#FFFFFF; --surface-2:#F4F7F9;
+  --ink:#0E1922; --ink-2:#46545F; --ink-3:#7C8B96;
+  --rule:#D0D9DF; --rule-soft:#E3EAEE;
+  --live:#1A7A40; --live-bg:#DFEFE2; --live-rule:#B9DCC2;
+  --warn:#8A6608; --warn-bg:#FAF1CE; --warn-rule:#E8D89A;
+  --dead:#8E9AA3; --dead-bg:#E2E8EC;
+  --danger:#9B2C2C; --danger-bg:#F8E3E3; --danger-rule:#EBC4C4;
+  --display:'Familjen Grotesk',system-ui,sans-serif;
+  --body:'Inter Tight',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1160px;margin:0 auto;padding:28px 20px 80px}
+
+/* ---------- header ---------- */
+header{border-bottom:1.5px solid var(--ink);padding-bottom:18px;margin-bottom:22px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+h1{font-family:var(--display);font-size:clamp(30px,5vw,46px);font-weight:700;letter-spacing:-.022em;line-height:1.02}
+h1 span{color:var(--ink-3);font-weight:400}
+.meta{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 20px}
+
+/* ---------- signature: funnel strip ---------- */
+.funnel{margin:22px 0 26px;background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:18px 20px 16px}
+.funnel-hd{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
+.fbars{display:flex;align-items:flex-end;gap:3px;height:76px}
+.fb{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
+.fb .bar{background:var(--ink);border-radius:1px 1px 0 0;transition:background .18s}
+.fb:hover .bar{background:var(--live)}
+.fb .n{font-family:var(--mono);font-size:14px;font-weight:600;margin-bottom:5px;line-height:1}
+.fb .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin-top:7px;line-height:1.25;min-height:24px}
+
+/* ---------- tabs ---------- */
+nav.tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--rule);margin-bottom:4px}
+nav.tabs button{background:none;border:none;border-bottom:2px solid transparent;font-family:var(--body);font-size:14px;font-weight:500;color:var(--ink-3);padding:9px 15px 8px;cursor:pointer;margin-bottom:-1px;transition:color .15s}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+nav.tabs button .cnt{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:5px}
+nav.tabs button:focus-visible{outline:2px solid var(--live);outline-offset:2px}
+
+.bucketnote{background:var(--surface-2);border-left:2px solid var(--ink-3);padding:11px 15px;margin:16px 0 14px;font-size:13.5px;color:var(--ink-2)}
+.toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:14px 0 10px;font-size:13px}
+.toolbar label{display:flex;gap:7px;align-items:center;cursor:pointer;color:var(--ink-2)}
+
+/* ---------- rows ---------- */
+.row{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;margin-bottom:5px;transition:border-color .15s}
+.row:hover{border-color:var(--rule)}
+.row.alive{border-left:3px solid var(--live);background:var(--live-bg);border-color:var(--live-rule);border-left-color:var(--live)}
+.row.hold{border-left:3px solid var(--warn);background:var(--warn-bg);border-color:var(--warn-rule);border-left-color:var(--warn)}
+.row.out{border-left:3px solid var(--danger);background:var(--danger-bg);border-color:var(--danger-rule);border-left-color:var(--danger)}
+.row .rbody{background:rgba(255,255,255,.55)}
+.row.alive .stat,.row.hold .stat,.row.out .stat{background:rgba(255,255,255,.75)}
+.row.alive .note-in,.row.hold .note-in,.row.out .note-in{background:#fff}
+
+/* legenda */
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0 2px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:13px;height:13px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.12)}
+
+/* lista iniziale */
+.lista{border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--surface)}
+.lrow{display:grid;grid-template-columns:34px 78px 1fr 1.25fr;gap:12px;align-items:baseline;padding:8px 13px;border-bottom:1px solid rgba(0,0,0,.05);font-size:13.5px}
+.lrow:last-child{border-bottom:none}
+.lrow.verde{background:var(--live-bg)}
+.lrow.giallo{background:var(--warn-bg)}
+.lrow.rosso{background:var(--danger-bg)}
+.lnum{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.ltk{font-family:var(--display);font-weight:600;font-size:14.5px}
+.lnome{color:var(--ink)}
+.lesito{color:var(--ink-2);font-size:12.5px}
+.toolbar .cnt{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:3px}
+@media (max-width:720px){
+  .lrow{grid-template-columns:28px 66px 1fr;gap:8px}
+  .lrow .lesito{grid-column:2 / -1;font-size:11.5px}
+}
+.rhead{display:grid;grid-template-columns:118px 1fr 78px 78px 116px 26px;gap:12px;align-items:center;padding:11px 14px;cursor:pointer;width:100%;background:none;border:none;text-align:left;font-family:var(--body);font-size:14px;color:var(--ink)}
+.rhead:focus-visible{outline:2px solid var(--live);outline-offset:-2px}
+.tk{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.01em}
+.tk small{display:block;font-family:var(--body);font-weight:400;font-size:11.5px;color:var(--ink-3);letter-spacing:0}
+.verdict{font-size:13px;color:var(--ink-2)}
+.num{font-family:var(--mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.neg{color:var(--danger)}
+.chev{color:var(--ink-3);font-size:11px;transition:transform .18s;text-align:center}
+.row.open .chev{transform:rotate(90deg)}
+
+/* gate track */
+.track{display:flex;gap:2px;align-items:center}
+.seg{height:7px;flex:1;background:var(--dead-bg);border-radius:1px}
+.seg.pass{background:var(--live)}
+.seg.fail{background:var(--danger)}
+.seg.pend{background:repeating-linear-gradient(45deg,var(--rule),var(--rule) 2px,transparent 2px,transparent 4px)}
+
+.rbody{display:none;padding:2px 14px 18px 14px;border-top:1px solid var(--rule-soft)}
+.row.open .rbody{display:block}
+.rbody h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:15px 0 7px;font-weight:500}
+.rbody p{font-size:14px;color:var(--ink-2);margin-bottom:9px;max-width:76ch}
+.stats{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+.stat{background:var(--surface-2);border:1px solid var(--rule-soft);border-radius:2px;padding:5px 9px;font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.stat b{color:var(--ink);font-weight:600}
+.note-in{width:100%;font-family:var(--body);font-size:13.5px;color:var(--ink);background:var(--surface-2);border:1px solid var(--rule);border-radius:2px;padding:9px 11px;resize:vertical;min-height:62px}
+.note-in:focus{outline:2px solid var(--live);outline-offset:-1px}
+.saved{font-family:var(--mono);font-size:10.5px;color:var(--live);margin-top:5px;min-height:14px}
+
+/* ---------- methodology ---------- */
+.meth{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:26px 28px;margin-top:6px}
+.meth h2{font-family:var(--display);font-size:26px;font-weight:600;letter-spacing:-.018em;margin:34px 0 10px}
+.meth h2:first-child{margin-top:0}
+.meth h3{font-family:var(--display);font-size:17px;font-weight:600;margin:22px 0 6px}
+.meth p{font-size:14.5px;color:var(--ink-2);margin-bottom:11px;max-width:74ch}
+.meth ul{margin:0 0 13px 17px;max-width:74ch}
+.meth li{font-size:14.5px;color:var(--ink-2);margin-bottom:6px}
+.meth code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:2px 5px;border-radius:2px;color:var(--ink)}
+.formula{font-family:var(--mono);font-size:13px;background:var(--surface-2);border-left:2px solid var(--live);padding:13px 16px;margin:10px 0 15px;overflow-x:auto;color:var(--ink)}
+.caution{border-left:2px solid var(--warn);background:var(--warn-bg);padding:13px 16px;margin:14px 0;font-size:14px;color:#5C3606;max-width:74ch}
+
+table.gt{width:100%;border-collapse:collapse;margin:8px 0 18px;font-size:13.5px}
+table.gt th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500;padding:7px 10px 7px 0;border-bottom:1px solid var(--rule)}
+table.gt td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule-soft);color:var(--ink-2);vertical-align:top}
+table.gt td:first-child{font-family:var(--mono);font-size:12px;color:var(--ink);white-space:nowrap}
+
+.excl{columns:2;column-gap:26px}
+.excl-g{break-inside:avoid;margin-bottom:15px}
+.excl-g h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;font-weight:500}
+.excl-g p{font-size:13.5px;color:var(--ink-2)}
+.excl-g .tks{font-family:var(--mono);font-size:12.5px;color:var(--ink);margin-bottom:2px}
+
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-3);max-width:74ch}
+@media (max-width:720px){
+  .rhead{grid-template-columns:100px 1fr 26px;gap:8px}
+  .rhead .num,.rhead .track{display:none}
+  .excl{columns:1}
+  .fb .lb{font-size:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Infrastruttura di screening · v1</div>
+  <h1>Software US <span>— large cap oltre 10 miliardi</span></h1>
+  <div class="meta">
+    <span id="m-date">Prezzi al 18 agosto 2026</span>
+    <span>69 ticker esaminati</span>
+    <span>Fonti: FMP · Alpha Vantage · ricerca</span>
+  </div>
+</header>
+
+<section class="funnel" aria-label="Sopravvivenza per stadio">
+  <div class="funnel-hd">Mortalità per stadio</div>
+  <div class="fbars" id="fbars"></div>
+</section>
+
+<nav class="tabs" role="tablist" id="tabs"></nav>
+<div id="panel"></div>
+
+<footer>
+  Strumento di ricerca personale. Non è consulenza finanziaria né una raccomandazione di investimento.
+  Le soglie sono ipotesi di lavoro da calibrare sui dati, non parametri validati.
+  Le note che scrivi restano salvate su questo dispositivo.
+</footer>
+</div>
+
+<script>
+/* ============================================================
+   DATI — un blocco per settore. Per aggiungerne uno, si copia
+   la struttura e si cambia la chiave. Il resto del file non si tocca.
+   ============================================================ */
+const GATES = ["Universo","Classificazione","Dislocazione","Qualità","Archetipo","Stabilizzazione"];
+
+const SETTORE = {
+  nome: "Software",
+  funnel: [
+    {n:69, l:"Lista iniziale"},
+    {n:38, l:"Software vero"},
+    {n:16, l:"Dislocati oltre 20%"},
+    {n:6,  l:"Qualità verificata"},
+    {n:2,  l:"Archetipo testato"},
+    {n:0,  l:"Pronti a entrare"}
+  ],
+  bucket: {
+    bassa: {
+      nome:"Esposizione bassa",
+      nota:"EDA, sicurezza, infrastruttura, dati e osservabilità. L'output non è generabile da un modello e il lock-in è tecnico. Nei fatti è il bucket che il mercato ha già protetto: dieci nomi su sedici stanno entro il 10% dai massimi."
+    },
+    media: {
+      nome:"Esposizione media",
+      nota:"SaaS verticale con dati proprietari o workflow regolamentato. È il segmento su cui il mercato non ha ancora deciso, e infatti concentra la dislocazione più interessante."
+    },
+    alta: {
+      nome:"Esposizione alta",
+      nota:"Licenza per postazione o output replicabile da un modello. Escluso dalla v1 per scelta, non per giudizio di qualità — ma è qui che stanno i due drawdown più profondi dell'universo. La proposta è convertire l'esclusione in una barra più alta anziché in un divieto."
+    }
+  },
+  titoli: [
+    /* ---------- BASSA ---------- */
+    {tk:"SNPS",nome:"Synopsys",b:"bassa",px:413.22,dd:-35.1,low:12.8,st:"alive",
+     gates:["pass","pass","pass","pass","warn","pend"],
+     verdetto:"Qualità superata, archetipo con riserva",
+     stats:["Ricavi <b>+41,9%</b>","Margine lordo <b>82,6%</b>","SBC/ricavi <b>10,3%</b>","P/E fwd <b>21,6</b>","Debito netto <b>8,4 mld</b>"],
+     note:[
+      ["Perché è sceso","Non è contagio di settore. Il 27 maggio ha battuto le stime e alzato la guidance, e il giorno dopo il titolo ha perso il 9,11% mentre il comparto saliva del 3,2%. Un mercato che vende su una trimestrale battuta sta rifiutando quella specifica azienda, non il settore."],
+      ["Cosa è rotto davvero","Il segmento Design IP, circa un quinto dei ricavi, è in calo del 6% anno su anno perché gli hyperscaler stanno costruendo IP proprietario e bypassando il catalogo. Il management ha ceduto Processor IP Solutions, confermando che il segmento è compromesso. È disintermediazione del fornitore da parte del cliente, non ciclicità."],
+      ["Cosa regge","L'80% dei ricavi è EDA in duopolio con Cadence, con margini di Design Automation in espansione al 43,3%. Su questa parte il fossato tiene."],
+      ["Il crollo degli utili è contabile","Gli ammortamenti sono passati da 295 milioni nel 2024 a circa 1,8 miliardi annualizzati oggi, sei volte, per l'acquisizione Ansys. Il −96% di utile GAAP è costo non monetario, non deterioramento operativo."],
+      ["La riserva","Bilancio trasformato: debito da 0,7 a 10,8 miliardi, avviamento e immateriali all'82% dell'attivo, patrimonio tangibile profondamente negativo. E le azioni sono passate da 155,9 a 191,5 milioni, +23% di diluizione da acquisizione — che il nostro test sulla SBC non intercettava."],
+      ["Lo sconto su Cadence","P/E forward 21,6 contro 40,2 di Cadence: sconto del 46% sul gemello del duopolio. In parte meritato per leva, diluizione e opacità GAAP. La domanda aperta è se il 46% sia troppo per un problema che riguarda un quinto dei ricavi."],
+      ["Cosa deve essere vero","Design IP che si stabilizza nel secondo semestre, sinergie Ansys visibili nel margine 2027, debito netto sotto i 6 miliardi entro fine 2027. Se Design IP resta a −6% l'anno prossimo, la tesi è morta."]
+     ]},
+    {tk:"ZS",nome:"Zscaler",b:"bassa",px:183.60,dd:-45.5,low:60.2,st:"out",
+     gates:["pass","pass","pass","fail","",""],
+     verdetto:"Scartato: compensi in azioni al 24,7%",
+     stats:["SBC/ricavi <b>24,7%</b>","FCF dichiarato <b>28,0%</b>","FCF netto SBC <b>3,4%</b>","Ricavi <b>+25,4%</b>"],
+     note:[
+      ["Il caso che giustifica la metrica","Con il flusso di cassa dichiarato la Rule of 40 sarebbe 53 e Zscaler passerebbe senza problemi. Sottraendo i compensi in azioni il margine di cassa crolla dal 28% al 3,4% e la Rule of 40 scende a 29. Quasi tutta la cassa generata viene restituita ai dipendenti in azioni."],
+      ["Il trend peggiora","La SBC è cresciuta da 121 milioni nel 2020 a 661 milioni nel 2025, oltre cinque volte. E l'azienda è in perdita netta da dieci esercizi consecutivi."]
+     ]},
+    {tk:"CHKP",nome:"Check Point",b:"bassa",px:131.72,dd:-37.5,low:17.4,st:"out",
+     gates:["pass","pass","pass","fail","",""],
+     verdetto:"Scartato: crescita ricavi +1,3%",
+     stats:["Ricavi <b>+1,3%</b>","Margine lordo <b>87,5%</b>","SBC/ricavi <b>7,4%</b>","FCF netto SBC <b>35,0%</b>","P/E fwd <b>12,8</b>"],
+     note:[
+      ["Non è una trappola contabile","Passa ogni test di qualità in modo netto: SBC al 7,4%, margine di cassa al 35% netto, riacquisti da 1,4 miliardi l'anno su 13,4 di capitalizzazione. Capitale davvero restituito, azioni in riduzione."],
+      ["È una trappola di crescita","Ricavi +1,3%. La Rule of 40 a 36 sta tutta nel margine e zero nella crescita. Comprare stagnazione a sconto è il modo classico di restare fermi per anni. Le medie mobili restano in downtrend mentre il resto del bucket sale — segnale confermativo."],
+      ["Da verificare","Nel 2025 il flusso da finanziamento è positivo per 752 milioni nonostante 1,4 miliardi di riacquisti, il che implica nuovo debito in un'azienda storicamente priva di indebitamento."]
+     ]},
+    {tk:"DOCN",nome:"DigitalOcean",b:"bassa",px:129.92,dd:-30.7,low:338.6,st:"out",
+     gates:["pass","pass","pass","fail","",""],
+     verdetto:"Scartato: margine lordo 57,2%",
+     stats:["Margine lordo <b>57,2%</b>","Ricavi <b>+28,6%</b>","P/E fwd <b>108,7</b>"],
+     note:[["Il filtro ha funzionato","Margine lordo al 57,2% contro una soglia del 65%. È un data center travestito da software: la struttura di costo è quella dell'infrastruttura, non della licenza. Esattamente il caso che la soglia doveva intercettare."]]},
+    {tk:"CDNS",nome:"Cadence",b:"bassa",px:324.82,dd:-22.0,low:23.6,st:"hold",
+     gates:["pass","pass","pass","pend","",""],
+     verdetto:"Dislocato, qualità da verificare",
+     stats:["Ricavi <b>+24,2%</b>","Margine lordo <b>85,9%</b>","P/E fwd <b>40,2</b>"],
+     note:[["Perché resta in lista","È il termine di paragone di Synopsys e l'altra metà del duopolio EDA. Drawdown del 22% con crescita del 24% e margine lordo dell'86%. Mancano SBC, diluizione e multipli contro la propria storia."]]},
+    {tk:"NTNX",nome:"Nutanix",b:"bassa",px:66.60,dd:-19.2,low:95.8,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+10,0%</b>","Margine lordo <b>87,1%</b>"],note:[]},
+    {tk:"GEN",nome:"Gen Digital",b:"bassa",px:28.48,dd:-8.9,low:61.7,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+6,3%</b>","P/E fwd <b>9,8</b>"],note:[]},
+    {tk:"DT",nome:"Dynatrace",b:"bassa",px:49.14,dd:-7.8,low:55.3,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+16,2%</b>","Margine lordo <b>81,6%</b>"],note:[]},
+    {tk:"FFIV",nome:"F5",b:"bassa",px:403.20,dd:-7.3,low:80.2,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+10,9%</b>"],note:[]},
+    {tk:"DDOG",nome:"Datadog",b:"bassa",px:273.90,dd:-6.4,low:179.5,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+35,6%</b>","P/E fwd <b>104,2</b>"],note:[]},
+    {tk:"CRWD",nome:"CrowdStrike",b:"bassa",px:216.95,dd:-4.6,low:153.2,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+25,6%</b>","P/E fwd <b>175,4</b>"],note:[]},
+    {tk:"SNOW",nome:"Snowflake",b:"bassa",px:328.92,dd:-3.8,low:178.0,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+33,5%</b>","P/E fwd <b>166,7</b>"],note:[]},
+    {tk:"PANW",nome:"Palo Alto Networks",b:"bassa",px:384.27,dd:-3.7,low:175.3,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+31,1%</b>","P/E fwd <b>93,5</b>"],note:[]},
+    {tk:"FROG",nome:"JFrog",b:"bassa",px:96.17,dd:-3.1,low:182.4,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+28,7%</b>"],note:[]},
+    {tk:"MDB",nome:"MongoDB",b:"bassa",px:460.32,dd:-2.7,low:122.5,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+25,2%</b>"],note:[]},
+    {tk:"OKTA",nome:"Okta",b:"bassa",px:154.25,dd:-1.8,low:146.2,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Ricavi <b>+11,2%</b>"],note:[]},
+
+    /* ---------- MEDIA ---------- */
+    {tk:"INTU",nome:"Intuit",b:"media",px:353.93,dd:-50.8,low:40.0,st:"alive",
+     gates:["pass","pass","pass","pend","warn","pend"],
+     verdetto:"Candidato principale, riporta a breve",
+     stats:["Ricavi <b>+10,4%</b>","Margine lordo <b>80,8%</b>","Margine operativo <b>47,0%</b>","P/E fwd <b>12,7</b>","Cassa netta <b>positiva</b>"],
+     note:[
+      ["Archetipo","Contagio narrativo di manuale. È tra i titoli crollati durante la SaaS-pocalypse ed è inciampata a febbraio dopo il rilascio dell'ultimo modello Claude di Anthropic. Il multiplo è passato da 45 volte gli utili attesi a circa 13."],
+      ["I fondamentali reggono","Guidance annuale alzata a 21,3-21,4 miliardi, +13-14%. QuickBooks Online Accounting +22%, Credit Karma +15%, Global Business Solutions +15%, clienti TurboTax Live +38%. Al 30 aprile: 6,8 miliardi di cassa contro 6,2 di debito, con nuovo riacquisto da 8 miliardi."],
+      ["Ma il bear case non è solo narrativa","Il 20 maggio il management ha ammesso di aver 'perso sul prezzo' fra i filers più sensibili. Unità totali online in calo del 2%, quota e-file giù di un punto, ARPU +11%: alzare i prezzi su una base utenti in contrazione è il modello che le alternative AI-native sono costruite per sfruttare."],
+      ["Il giudizio più severo","Goldman ha declassato a Sell: TurboTax vale circa un quarto di ricavi e utile operativo, e nel loro scenario base i ricavi TurboTax sarebbero del 18% sotto i livelli 2025 entro il 2030 se il 20% dei contribuenti passasse a soluzioni interamente AI. Un gestore che ha venduto ha scritto che il cuore del fossato — guidare utenti non esperti attraverso dichiarazioni e contabilità — è esattamente l'attività più esposta all'AI agentica."],
+      ["La forma condivisa con Synopsys","Tre quarti del business solidi e in crescita, un quarto con una minaccia strutturale reale. Non è coincidenza: è ciò che il filtro seleziona per costruzione, perché un'azienda senza alcun problema non scende del 50%."],
+      ["Prima di decidere","Trimestrale attesa a ridosso del 19 agosto: evento binario, il framework dice di non iniziare posizioni dentro un catalizzatore datato. In corso anche indagini per possibile frode sui titoli legate alle comunicazioni sulla stagione fiscale 2026."],
+      ["Trasparenza","Anthropic, che ha costruito questo assistente, è citata sia come innesco del selloff sia come partner di Intuit dal febbraio 2026. Sul merito della domanda se l'AI eroderà questi modelli di business, il giudizio di Claude va pesato di conseguenza."]
+     ]},
+    {tk:"ORCL",nome:"Oracle",b:"media",px:143.73,dd:-58.4,low:25.5,st:"out",
+     gates:["pass","pass","pass","pend","fail",""],
+     verdetto:"Scartato all'archetipo: cambio di modello",
+     stats:["Capex <b>+162%</b>","FCF <b>−23,7 mld</b>","Debito <b>~130 mld</b>","Debito/PN <b>~300%</b>","Margine lordo <b>65,8%</b>"],
+     note:[
+      ["Non è un de-rating","Nell'esercizio 2026 il capex è salito del 162% a 55,7 miliardi e il flusso di cassa libero è stato negativo per 23,7 miliardi, contro un deficit di 394 milioni nel 2025. Il debito è vicino ai 130 miliardi contro 43 di patrimonio netto: un rapporto del 300%, contro il 50% di Amazon e il 30% di Microsoft."],
+      ["Il credito ha già giudicato","S&P ha declassato a BBB−, un gradino sopra il junk, e il costo per assicurarsi contro il default ha toccato massimi storici, con le obbligazioni che trattano come debito speculativo."],
+      ["Il tell che chiude la questione","Il margine lordo è sceso al 65,8% perché il noleggio di GPU è un modello a margine più basso che erode i margini software. Il nostro anti-archetipo dice: il segnale è il margine lordo che scende insieme al prezzo. Qui accade — ma non per deterioramento competitivo, bensì perché l'azienda sta cambiando natura."],
+      ["Coerenza con le nostre regole","Avevamo escluso CoreWeave e Nebius come infrastruttura pesante di capitale. Oracle sta diventando quella cosa. Se escludiamo loro, dobbiamo escludere lui — non perché non possa salire, ma perché le nostre metriche non lo descrivono."],
+      ["Concentrazione","Circa 300 dei 638 miliardi di backlog dipendono da OpenAI, società profondamente in perdita, e sono stati dichiarati circa 261 miliardi di impegni di leasing di lungo termine sui data center."]
+     ]},
+    {tk:"TRMB",nome:"Trimble",b:"media",px:57.37,dd:-32.0,low:19.7,st:"out",
+     gates:["pass","fail","","","",""],
+     verdetto:"Riclassificato: hardware, non software",
+     stats:["Drawdown <b>−32,0%</b>"],
+     note:[["Il valore della seconda fonte","FMP lo classifica come Hardware, Equipment & Parts. Avere due tassonomie indipendenti fa emergere errori di classificazione che una fonte sola nasconde. Fuori dall'universo software."]]},
+    {tk:"PTC",nome:"PTC",b:"media",px:148.87,dd:-31.6,low:37.2,st:"hold",gates:["pass","pass","pass","pend","",""],verdetto:"Dislocato, qualità da verificare",stats:["Drawdown <b>−31,6%</b>","Cap. <b>17,2 mld</b>"],note:[]},
+    {tk:"ADBE",nome:"Adobe",b:"media",px:265.85,dd:-28.3,low:39.8,st:"hold",
+     gates:["pass","pass","pass","pend","",""],
+     verdetto:"Dislocato, il consenso ha già capitolato",
+     stats:["Ricavi <b>+12,7%</b>","Margine lordo <b>89,4%</b>","Margine operativo <b>35,3%</b>","P/E fwd <b>9,6</b>","Target consenso <b>+6,2%</b>"],
+     note:[
+      ["Perché è interessante","Multipli da azienda in declino applicati a un'azienda che cresce a doppia cifra con margine lordo dell'89,4%. A 9,6 volte gli utili attesi, il mercato sta prezzando erosione strutturale."],
+      ["La differenza con Intuit","Sul consenso Adobe ha già capitolato: target medio a +6,2%, gli analisti hanno accettato la tesi bear. Su Intuit no, target a +34,5%. Sono due situazioni psicologicamente opposte e vanno testate diversamente — su Adobe la sorpresa possibile è positiva, su Intuit resta spazio per ulteriori tagli."],
+      ["Da fare","Qualità, SBC, diluizione e archetipo. La domanda specifica è se l'output di Creative Cloud sia sostituibile da un modello generativo o se il lock-in di workflow regga."]
+     ]},
+    {tk:"ADSK",nome:"Autodesk",b:"media",px:251.28,dd:-23.6,low:35.5,st:"hold",gates:["pass","pass","pass","pend","",""],verdetto:"Dislocato, qualità da verificare",stats:["Drawdown <b>−23,6%</b>","Cap. <b>53,1 mld</b>"],note:[]},
+    {tk:"TOST",nome:"Toast",b:"media",px:35.51,dd:-22.2,low:59.5,st:"hold",gates:["pass","pass","pass","pend","",""],verdetto:"Dislocato, natura ibrida da chiarire",stats:["Drawdown <b>−22,2%</b>","Cap. <b>20,6 mld</b>"],note:[["Attenzione","Modello ibrido software più pagamenti: i ricavi da processing dominano e comprimono il margine lordo. Va verificato se le metriche software siano applicabili."]]},
+    {tk:"VEEV",nome:"Veeva",b:"media",px:246.02,dd:-20.8,low:66.2,st:"hold",gates:["pass","pass","pass","pend","",""],verdetto:"Dislocato al margine",stats:["Drawdown <b>−20,8%</b>","Cap. <b>40,0 mld</b>"],note:[]},
+    {tk:"JKHY",nome:"Jack Henry",b:"media",px:155.50,dd:-19.6,low:28.5,st:"out",gates:["pass","warn","fail","","",""],verdetto:"Sotto soglia, e classificazione al confine",stats:["Drawdown <b>−19,6%</b>"],note:[]},
+    {tk:"PLTR",nome:"Palantir",b:"media",px:172.50,dd:-16.9,low:62.2,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Cap. <b>396,1 mld</b>"],note:[]},
+    {tk:"IOT",nome:"Samsara",b:"media",px:40.13,dd:-15.5,low:71.6,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Cap. <b>23,2 mld</b>"],note:[]},
+    {tk:"SSNC",nome:"SS&C Technologies",b:"media",px:81.21,dd:-10.8,low:32.3,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Cap. <b>19,1 mld</b>"],note:[]},
+    {tk:"MANH",nome:"Manhattan Associates",b:"media",px:200.73,dd:-9.0,low:68.6,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Cap. <b>11,7 mld</b>"],note:[]},
+
+    /* ---------- ALTA ---------- */
+    {tk:"APP",nome:"AppLovin",b:"alta",px:307.26,dd:-58.8,low:1.3,st:"hold",
+     gates:["pass","warn","pass","pend","","fail"],
+     verdetto:"Sul minimo: coltello che cade",
+     stats:["Sopra il minimo <b>+1,3%</b>","Beta <b>2,53</b>","Cap. <b>103,2 mld</b>"],
+     note:[["L'unico sul minimo","È l'unico dei 38 che sta praticamente sul minimo a 52 settimane, ed è sceso mentre quasi tutto il resto saliva. Con beta 2,53 è il profilo del coltello che cade allo stato puro: nessun segnale di stabilizzazione, momentum ancora negativo, volatilità doppia rispetto al mercato. Watchlist, non portafoglio."],
+      ["Classificazione dubbia","È adtech mobile più che software applicativo. Da rivedere se appartenga all'universo."]]},
+    {tk:"HUBS",nome:"HubSpot",b:"alta",px:226.25,dd:-56.9,low:33.4,st:"hold",
+     gates:["pass","pass","pass","pend","",""],
+     verdetto:"Massima distruzione di valore del gruppo",
+     stats:["Da <b>525</b> a <b>226</b>","Cap. <b>11,6 mld</b>"],
+     note:[["Al limite dimensionale","Capitalizzazione scesa a 11,6 miliardi: un altro passo e uscirebbe dall'universo per dimensione. CRM per il mid-market B2B, cioè licenza per postazione su clienti la cui pianta organica è essa stessa esposta all'automazione."]]},
+    {tk:"NOW",nome:"ServiceNow",b:"alta",px:119.49,dd:-38.6,low:47.1,st:"hold",
+     gates:["pass","pass","pass","pend","",""],
+     verdetto:"Il benchmark della categoria, dislocato",
+     stats:["Drawdown <b>−38,6%</b>","Cap. <b>123,5 mld</b>","Beta <b>0,93</b>"],
+     note:[["Perché conta più degli altri","È il riferimento qualitativo del SaaS enterprise. Quando il nome migliore della categoria perde il 39%, il de-rating riguarda la categoria e non l'azienda. Ha inoltre modelli agentici in produzione: la domanda se l'AI sia complemento o sostituto è empiricamente verificabile sui suoi numeri, non ideologica."]]},
+    {tk:"DOCU",nome:"DocuSign",b:"alta",px:60.01,dd:-30.7,low:49.4,st:"hold",gates:["pass","pass","pass","pend","",""],verdetto:"Dislocato, qualità da verificare",stats:["Drawdown <b>−30,7%</b>","Cap. <b>11,5 mld</b>"],note:[]},
+    {tk:"CRM",nome:"Salesforce",b:"alta",px:196.14,dd:-27.1,low:34.1,st:"hold",gates:["pass","pass","pass","pend","",""],verdetto:"Dislocato, qualità da verificare",stats:["Drawdown <b>−27,1%</b>","Cap. <b>160,6 mld</b>"],note:[]},
+    {tk:"TEAM",nome:"Atlassian",b:"alta",px:163.00,dd:-11.4,low:191.0,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Sopra il minimo <b>+191%</b>"],note:[]},
+    {tk:"U",nome:"Unity Software",b:"alta",px:46.74,dd:-10.4,low:178.5,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Sopra il minimo <b>+179%</b>","Beta <b>2,02</b>"],note:[]},
+    {tk:"TWLO",nome:"Twilio",b:"alta",px:232.10,dd:-10.2,low:135.8,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Sopra il minimo <b>+136%</b>"],note:[]},
+    {tk:"ZM",nome:"Zoom",b:"alta",px:104.71,dd:-8.7,low:48.1,st:"out",gates:["pass","pass","fail","","",""],verdetto:"Dislocazione sotto soglia",stats:["Cap. <b>30,7 mld</b>"],note:[]}
+  ],
+  escluse: [
+    {g:"Non sono software",tks:"MSTR · FWONK · RBA · CRCL · CHYM · CBRS · CRWV · NBIS",p:"Veicolo su bitcoin, diritti sportivi, aste industriali, stablecoin, neobanca, semiconduttori, capacità GPU in affitto. Modelli economici incompatibili con margine lordo e Rule of 40."},
+    {g:"Media e advertising",tks:"NFLX · SPOT · TTWO · RBLX · PINS · RDDT · ROKU",p:"Vivono di contenuti o pubblicità. Le metriche software misurano un'altra cosa."},
+    {g:"Servizi e dati",tks:"LDOS · TRI · IT · FIS · ADP",p:"Appalti difesa, ricerca e advisory, processing e payroll con reddito da float. Margini lordi strutturalmente bassi, non confrontabili."},
+    {g:"Storia insufficiente",tks:"FIG · SAIL · BSP · AUR",p:"Quotate da troppo poco per il confronto con la propria storia a cinque anni. Aurora è pre-ricavi, Bending Spoons è italiana."},
+    {g:"Mega-cap piattaforma",tks:"MSFT · GOOGL · GOOG · META",p:"Piattaforme diversificate dove il software è una parte del tutto. È l'esclusione più discutibile: Meta mostrava il profilo di de-rating più netto. Andrebbero trattate come categoria separata con metriche proprie. GOOG e GOOGL sono inoltre la stessa società."},
+    {g:"Altri",tks:"VRSN · ROP · CSGP",p:"Registro domini, conglomerato industriale, dati immobiliari. Da rivedere caso per caso."}
+  ]
+};
+
+/* Lista di partenza, nell'ordine in cui è stata fornita */
+const LISTA = [
+["RBLX","Roblox","rosso","Fuori perimetro · gaming e advertising"],
+["CSGP","CoStar Group","giallo","Fuori perimetro · dati immobiliari, da rivedere"],
+["CBRS","Cerebras Systems","rosso","Fuori perimetro · semiconduttori"],
+["RBA","RB Global","rosso","Fuori perimetro · aste industriali"],
+["MSTR","Strategy","rosso","Fuori perimetro · veicolo su bitcoin"],
+["CHKP","Check Point","rosso","Bassa · scartato alla qualità, crescita +1,3%"],
+["APP","AppLovin","giallo","Alta · sul minimo, classificazione da chiarire"],
+["TRMB","Trimble","rosso","Media · riclassificato hardware"],
+["FIS","Fidelity National Info Services","rosso","Fuori perimetro · processing pagamenti"],
+["LDOS","Leidos","rosso","Fuori perimetro · servizi difesa"],
+["HUBS","HubSpot","giallo","Alta · dislocato −56,9%, qualità da verificare"],
+["INTU","Intuit","verde","Media · candidato principale"],
+["META","Meta Platforms","giallo","Fuori perimetro · mega-cap, esclusione discutibile"],
+["JKHY","Jack Henry","rosso","Media · sotto soglia, classificazione al confine"],
+["SNPS","Synopsys","verde","Bassa · unico ad aver superato la qualità"],
+["PTC","PTC","giallo","Media · dislocato −31,6%, qualità da verificare"],
+["ORCL","Oracle","rosso","Media · scartato all'archetipo, cambio di modello"],
+["ADBE","Adobe","giallo","Media · dislocato −28,3%, qualità da verificare"],
+["NFLX","Netflix","rosso","Fuori perimetro · media in streaming"],
+["CRM","Salesforce","giallo","Alta · dislocato −27,1%, qualità da verificare"],
+["SPOT","Spotify","rosso","Fuori perimetro · media in streaming"],
+["CDNS","Cadence","giallo","Bassa · dislocato −22,0%, qualità da verificare"],
+["ADSK","Autodesk","giallo","Media · dislocato −23,6%, qualità da verificare"],
+["FIG","Figma","rosso","Fuori perimetro · storia insufficiente"],
+["ZS","Zscaler","rosso","Bassa · scartato, compensi in azioni al 24,7%"],
+["NOW","ServiceNow","giallo","Alta · dislocato −38,6%, qualità da verificare"],
+["SSNC","SS&C Technologies","rosso","Media · dislocazione sotto soglia"],
+["GOOG","Alphabet C","giallo","Fuori perimetro · mega-cap e duplicato di GOOGL"],
+["IT","Gartner","rosso","Fuori perimetro · ricerca e advisory"],
+["GOOGL","Alphabet A","giallo","Fuori perimetro · mega-cap"],
+["TRI","Thomson Reuters","rosso","Fuori perimetro · dati e media"],
+["CRWV","CoreWeave","rosso","Fuori perimetro · capacità GPU in affitto"],
+["RDDT","Reddit","rosso","Fuori perimetro · advertising"],
+["FWONK","Liberty Formula One","rosso","Fuori perimetro · diritti sportivi"],
+["SAIL","SailPoint","rosso","Fuori perimetro · storia insufficiente"],
+["ZM","Zoom","rosso","Alta · dislocazione sotto soglia"],
+["GEN","Gen Digital","rosso","Bassa · dislocazione sotto soglia"],
+["CRCL","Circle Internet Group","rosso","Fuori perimetro · emittente stablecoin"],
+["MSFT","Microsoft","giallo","Fuori perimetro · mega-cap piattaforma"],
+["ROP","Roper Technologies","giallo","Fuori perimetro · conglomerato, da rivedere"],
+["TOST","Toast","giallo","Media · dislocato, natura ibrida da chiarire"],
+["MDB","MongoDB","rosso","Bassa · dislocazione sotto soglia"],
+["TTWO","Take-Two Interactive","rosso","Fuori perimetro · videogiochi"],
+["BSP","Bending Spoons","rosso","Fuori perimetro · non US, storia insufficiente"],
+["ADP","Automatic Data Processing","rosso","Fuori perimetro · payroll e float"],
+["VRSN","VeriSign","giallo","Fuori perimetro · registro domini, da rivedere"],
+["PLTR","Palantir","rosso","Media · dislocazione sotto soglia"],
+["DT","Dynatrace","rosso","Bassa · dislocazione sotto soglia"],
+["DOCU","DocuSign","giallo","Alta · dislocato −30,7%, qualità da verificare"],
+["VEEV","Veeva Systems","giallo","Media · dislocato al margine, −20,8%"],
+["MANH","Manhattan Associates","rosso","Media · dislocazione sotto soglia"],
+["FFIV","F5","rosso","Bassa · dislocazione sotto soglia"],
+["PINS","Pinterest","rosso","Fuori perimetro · advertising"],
+["IOT","Samsara","rosso","Media · dislocazione sotto soglia"],
+["AUR","Aurora Innovation","rosso","Fuori perimetro · pre-ricavi"],
+["CHYM","Chime Financial","rosso","Fuori perimetro · neobanca"],
+["NTNX","Nutanix","rosso","Bassa · dislocazione sotto soglia"],
+["OKTA","Okta","rosso","Bassa · dislocazione sotto soglia"],
+["ROKU","Roku","rosso","Fuori perimetro · hardware e advertising"],
+["SNOW","Snowflake","rosso","Bassa · dislocazione sotto soglia"],
+["TEAM","Atlassian","rosso","Alta · dislocazione sotto soglia"],
+["FROG","JFrog","rosso","Bassa · dislocazione sotto soglia"],
+["DOCN","DigitalOcean","rosso","Bassa · scartato, margine lordo al 57,2%"],
+["CRWD","CrowdStrike","rosso","Bassa · dislocazione sotto soglia"],
+["DDOG","Datadog","rosso","Bassa · dislocazione sotto soglia"],
+["TWLO","Twilio","rosso","Alta · dislocazione sotto soglia"],
+["U","Unity Software","rosso","Alta · dislocazione sotto soglia"],
+["PANW","Palo Alto Networks","rosso","Bassa · dislocazione sotto soglia"],
+["NBIS","Nebius Group","rosso","Fuori perimetro · capacità GPU in affitto"]
+];
+
+/* ============================================================
+   PRESENTAZIONE — da qui in giù non serve toccare nulla
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const T = SETTORE.titoli;
+
+/* funnel */
+(function(){
+  const max = Math.max(...SETTORE.funnel.map(f=>f.n));
+  $("#fbars").innerHTML = SETTORE.funnel.map(f=>{
+    const h = Math.max(4, Math.round((f.n/max)*100));
+    return `<div class="fb" title="${f.l}: ${f.n}">
+      <div class="n">${f.n}</div>
+      <div class="bar" style="height:${h}%"></div>
+      <div class="lb">${f.l}</div>
+    </div>`;
+  }).join("");
+})();
+
+/* tabs */
+const TABS = [
+  {id:"lista",  label:"Lista iniziale"},
+  {id:"bassa", label:"Esposizione bassa"},
+  {id:"media", label:"Esposizione media"},
+  {id:"alta",  label:"Esposizione alta"},
+  {id:"escluse", label:"Fuori perimetro"},
+  {id:"metodo", label:"Metodologia"}
+];
+let active = "lista", onlyAlive = false, filtroStato = "tutti";
+
+$("#tabs").innerHTML = TABS.map(t=>{
+  const c = ["bassa","media","alta"].includes(t.id) ? T.filter(x=>x.b===t.id).length
+          : t.id==="escluse" ? 31 : t.id==="lista" ? LISTA.length : null;
+  return `<button role="tab" data-tab="${t.id}" aria-selected="${t.id===active}">
+    ${t.label}${c!==null?`<span class="cnt">${c}</span>`:""}</button>`;
+}).join("");
+
+$("#tabs").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-tab]"); if(!b) return;
+  active = b.dataset.tab;
+  [...$("#tabs").children].forEach(x=>x.setAttribute("aria-selected", x.dataset.tab===active));
+  render();
+});
+
+function gateTrack(g){
+  return `<div class="track" role="img" aria-label="Stadi superati">` +
+    GATES.map((_,i)=>{
+      const s = g[i]||"";
+      const cls = s==="pass"?"pass":s==="fail"?"fail":s==="warn"?"pass":s==="pend"?"pend":"";
+      return `<span class="seg ${cls}"></span>`;
+    }).join("") + `</div>`;
+}
+
+function rowHTML(t){
+  const body = (t.note.length||true) ? `<div class="rbody">
+      <div class="stats">${t.stats.map(s=>`<span class="stat">${s}</span>`).join("")}</div>
+      ${t.note.map(n=>`<h4>${n[0]}</h4><p>${n[1]}</p>`).join("")}
+      <h4>Note personali</h4>
+      <textarea class="note-in" data-tk="${t.tk}" placeholder="Perché lo tieni, perché lo scarti, cosa aspetti…"></textarea>
+      <div class="saved" data-saved="${t.tk}"></div>
+    </div>` : "";
+  return `<div class="row ${t.st}" data-tk="${t.tk}">
+    <button class="rhead" aria-expanded="false">
+      <span class="tk">${t.tk}<small>${t.nome}</small></span>
+      <span class="verdict">${t.verdetto}</span>
+      <span class="num ${t.dd<=-20?"neg":""}">${t.dd.toFixed(1)}%</span>
+      <span class="num">${t.px.toFixed(2)}</span>
+      ${gateTrack(t.gates)}
+      <span class="chev">▶</span>
+    </button>${body}</div>`;
+}
+
+const LEGENDA = `<div class="legend">
+  <span><i style="background:var(--live-bg);border-color:var(--live)"></i> In gioco</span>
+  <span><i style="background:var(--warn-bg);border-color:var(--warn)"></i> Da chiarire</span>
+  <span><i style="background:var(--danger-bg);border-color:var(--danger)"></i> Scartato</span>
+</div>`;
+
+function render(){
+  const p = $("#panel");
+  if(active==="metodo"){ p.innerHTML = METODO; return; }
+  if(active==="lista"){
+    const n = s => LISTA.filter(x=>x[2]===s).length;
+    let list = filtroStato==="tutti" ? LISTA : LISTA.filter(x=>x[2]===filtroStato);
+    p.innerHTML = `<div class="bucketnote">I ${LISTA.length} ticker come li hai forniti, nell'ordine originale, ciascuno con il proprio esito. Quattro erano quotazioni recenti che ho dovuto identificare: Honeywell Aerospace, Madison Air Solutions, Quantinuum e Somnigroup — le prime tre senza storia sufficiente.</div>
+      ${LEGENDA}
+      <div class="toolbar">
+        <label><input type="radio" name="fs" value="tutti" ${filtroStato==="tutti"?"checked":""}> Tutti <span class="cnt">${LISTA.length}</span></label>
+        <label><input type="radio" name="fs" value="verde" ${filtroStato==="verde"?"checked":""}> In gioco <span class="cnt">${n("verde")}</span></label>
+        <label><input type="radio" name="fs" value="giallo" ${filtroStato==="giallo"?"checked":""}> Da chiarire <span class="cnt">${n("giallo")}</span></label>
+        <label><input type="radio" name="fs" value="rosso" ${filtroStato==="rosso"?"checked":""}> Scartati <span class="cnt">${n("rosso")}</span></label>
+      </div>
+      <div class="lista">${list.map((x,i)=>
+        `<div class="lrow ${x[2]}">
+           <span class="lnum">${LISTA.indexOf(x)+1}</span>
+           <span class="ltk">${x[0]}</span>
+           <span class="lnome">${x[1]}</span>
+           <span class="lesito">${x[3]}</span>
+         </div>`).join("")}</div>`;
+    p.querySelectorAll('input[name="fs"]').forEach(r=>
+      r.addEventListener("change", e=>{ filtroStato = e.target.value; render(); }));
+    return;
+  }
+  if(active==="escluse"){
+    p.innerHTML = `<div class="bucketnote">Trentuno ticker della lista iniziale non entrano nell'universo software. Il filtro industry di TradingView raccoglie parecchie aziende le cui economics non sono descritte dalle metriche del settore.</div>
+      <div class="meth"><div class="excl">${SETTORE.escluse.map(e=>
+        `<div class="excl-g"><h4>${e.g}</h4><div class="tks">${e.tks}</div><p>${e.p}</p></div>`).join("")}</div></div>`;
+    return;
+  }
+  const b = SETTORE.bucket[active];
+  let list = T.filter(x=>x.b===active);
+  if(onlyAlive) list = list.filter(x=>x.st!=="out");
+  list.sort((a,c)=>a.dd-c.dd);
+  p.innerHTML = `<div class="bucketnote">${b.nota}</div>
+    ${LEGENDA}
+    <div class="toolbar">
+      <label><input type="checkbox" id="alive" ${onlyAlive?"checked":""}> Mostra solo chi è ancora in gioco</label>
+      <span style="color:var(--ink-3);font-family:var(--mono);font-size:11.5px">${list.length} titoli · ordinati per drawdown</span>
+    </div>
+    ${list.map(rowHTML).join("")}`;
+  $("#alive").addEventListener("change", e=>{ onlyAlive = e.target.checked; render(); });
+  wireRows();
+}
+
+function wireRows(){
+  document.querySelectorAll(".rhead").forEach(h=>{
+    h.addEventListener("click", ()=>{
+      const r = h.closest(".row"); const open = r.classList.toggle("open");
+      h.setAttribute("aria-expanded", open);
+      if(open) loadNote(r.dataset.tk);
+    });
+  });
+  document.querySelectorAll(".note-in").forEach(n=>{
+    let t;
+    n.addEventListener("input", ()=>{ clearTimeout(t); t=setTimeout(()=>saveNote(n.dataset.tk,n.value),600); });
+  });
+}
+
+async function loadNote(tk){
+  const el = document.querySelector(`.note-in[data-tk="${tk}"]`); if(!el||el.dataset.loaded) return;
+  el.dataset.loaded = "1";
+  try{
+    const r = await window.storage.get(`note:software:${tk}`);
+    if(r && r.value) el.value = r.value;
+  }catch(e){ /* nessuna nota salvata */ }
+}
+async function saveNote(tk,val){
+  const s = document.querySelector(`[data-saved="${tk}"]`);
+  try{
+    await window.storage.set(`note:software:${tk}`, val);
+    if(s){ s.textContent = "Salvato " + new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}); }
+  }catch(e){ if(s) s.textContent = "Salvataggio non riuscito — riprova"; }
+}
+
+/* ---------- metodologia ---------- */
+const METODO = `<div class="meth">
+<h2>Come funziona</h2>
+<p>Sei stadi in sequenza, ordinati dal filtro più economico al più costoso. I primi cinque si calcolano dai dati senza giudizio; gli ultimi richiedono lettura e decisione. Invertire l'ordine significherebbe fare analisi approfondita su titoli che verranno scartati comunque.</p>
+<p>Le barre colorate accanto a ogni titolo mostrano fin dove è arrivato: verde gli stadi superati, rosso quello che lo ha eliminato, tratteggio quelli non ancora calcolati.</p>
+
+<h2>Gli stadi</h2>
+<table class="gt">
+<thead><tr><th>Stadio</th><th>Cosa misura</th><th>Criterio</th></tr></thead>
+<tbody>
+<tr><td>1 · Universo</td><td>NYSE e NASDAQ, oltre 10 miliardi, industry Packaged Software e Internet Software/Services, volume medio oltre 500.000 azioni</td><td>Nessun filtro di performance: il settore si esporta intero, la dislocazione si misura dopo</td></tr>
+<tr><td>2 · Classificazione</td><td>È davvero un'azienda software? Bucket di esposizione alla disruption</td><td>Etichetta da sotto-industria, costo zero. I casi ambigui si risolvono più avanti</td></tr>
+<tr><td>3 · Dislocazione</td><td>Tre forme di sofferenza, pesate ugualmente</td><td>Almeno una forma oltre il 20%. Sopra il 50% è segnale d'allarme, non di occasione</td></tr>
+<tr><td>4 · Qualità</td><td>Margini, crescita, compensi in azioni, diluizione, bilancio</td><td>Livelli, trend, percentile nel bucket e confronto con la propria storia</td></tr>
+<tr><td>5 · Archetipo</td><td>Perché è sceso, e quel perché regge?</td><td>Classificazione in cinque tipi, ciascuno con un test dedicato</td></tr>
+<tr><td>6 · Stabilizzazione</td><td>Ha smesso di scendere?</td><td>Almeno due segnali su quattro. Conferma il timing, non seleziona</td></tr>
+</tbody></table>
+
+<h2>Le tre forme di dislocazione</h2>
+<p>Un drawdown non è l'unico modo in cui un titolo può essere penalizzato, e usarlo come unico filtro esclude in partenza i casi più interessanti.</p>
+<ul>
+<li><b>Drawdown assoluto</b> — il prezzo è sceso dal massimo a 52 settimane.</li>
+<li><b>Sottoperformance relativa</b> — il prezzo è fermo mentre il settore è salito. Nessun drawdown, ma dislocazione reale. Si misura come drawdown residuo: effettivo meno beta settoriale per drawdown del settore.</li>
+<li><b>Compressione del multiplo</b> — il prezzo è persino salito, ma gli utili sono cresciuti di più: il titolo è più economico di prima pur essendo ai massimi. È la forma più rara e meno affollata, e nessuno screener la trova perché richiede il confronto con la storia propria.</li>
+</ul>
+
+<h2>Scomporre il ribasso</h2>
+<p>Un calo di prezzo è sempre la somma di compressione del multiplo e taglio delle stime. In logaritmi le due componenti si sommano esattamente:</p>
+<div class="formula">ln(P_oggi / P_picco) = ln(M_oggi / M_picco) + ln(E_oggi / E_picco)<br><br>quota di de-rating = ln(M_oggi / M_picco) ÷ ln(P_oggi / P_picco)</div>
+<p>Prezzo −35% con stime −4% dà una quota di de-rating del 91%: il mercato ha cambiato idea sull'azienda, non l'azienda. Sotto il 50% è un reset degli utili e il prezzo ha solo seguito.</p>
+<div class="caution"><b>Il limite della metrica.</b> Presuppone che le stime siano informative. Quando il mercato prezza una minaccia strutturale a tre-cinque anni, le stime sono la variabile ritardataria — nessun analista taglia oggi i numeri del 2029. Nel software del 2026 questo rende la quota di de-rating vicina al 100% per quasi ogni nome, e un filtro che non scarta nessuno non è un filtro. Per questo l'asse discriminante qui è l'esposizione alla tesi, non la profondità del ribasso.</div>
+
+<h2>Qualità: perché tre strati e non una lista</h2>
+<p>Una soglia unica per tutto il mercato si rompe subito, perché un margine lordo del 40% è mediocre nel software e ottimo nel retail. Ma scrivere una lista per settore è peggio: undici manuali da mantenere, ognuno con soglie decise a intuito. Il principio che risolve: <b>i livelli sono settoriali, i trend e l'integrità sono universali</b>.</p>
+<h3>Strato 1 — Invarianti</h3>
+<p>Soglie identiche per tutti, perché misurano sopravvivenza e non economics: flusso di cassa positivo in almeno quattro anni su cinque, ROIC sopra il costo del capitale, copertura interessi oltre 4 volte, azioni non in crescita, margine lordo non deteriorante su sei trimestri, ricavi in decelerazione ammessa ma non in contrazione.</p>
+<h3>Strato 2 — Percentile nel bucket</h3>
+<p>Invece di scrivere soglie settoriali a mano, ogni titolo si classifica contro i propri pari: top 40% su almeno tre metriche fra ROIC, margine lordo, conversione di cassa e stabilità dei margini. Si autocalibra e non va mai riscritto.</p>
+<h3>Strato 3 — Contro la propria storia</h3>
+<p>ROIC e margine lordo attuali contro la mediana a cinque anni. È lo strato che smaschera il campione decaduto: supera gli invarianti, magari sta ancora nel top 40%, ma sta scendendo dal proprio standard.</p>
+
+<h2>Le metriche specifiche del software</h2>
+<ul>
+<li><b>Margine lordo oltre il 65%.</b> Sotto questa soglia non è un software business ma servizi travestiti. Il trend conta più del livello: i costi di inferenza AI stanno comprimendo i margini lordi, quindi un margine che scende è oggi molto più informativo che tre anni fa.</li>
+<li><b>Rule of 40 rilassata a 30.</b> Crescita ricavi più margine di cassa. Il valore 40 nasce in un'epoca di crescita più alta e su large cap mature esclude aziende sane. Il margine va calcolato <b>al netto dei compensi in azioni</b>, altrimenti la regola si lascia ingannare dal trucco contabile che dovrebbe scoprire.</li>
+<li><b>Compensi in azioni sotto il 15% dei ricavi.</b> La metrica più importante e quella che nessuno screener espone. Il software riporta un flusso di cassa che esclude la SBC come costo non monetario: formalmente vero, ma il costo lo paga l'azionista in diluizione. E in un de-rating peggiora, perché servono più azioni per pagare lo stesso compenso a un prezzo più basso.</li>
+<li><b>Numero di azioni su tre anni, per qualsiasi causa.</b> Aggiunto dopo Synopsys: il test sulla SBC dava 10,3%, promosso, ma le azioni erano cresciute del 23% per l'emissione legata all'acquisizione. Misurare solo la diluizione da compensi lascia scoperta quella da M&A.</li>
+<li><b>Cassa netta o leva sotto 2 volte.</b> Nel software l'indebitamento in un de-rating è letale, perché il rifinanziamento arriva quando il multiplo è compresso.</li>
+</ul>
+
+<h2>I tre bucket di esposizione</h2>
+<p>Non è una valutazione soggettiva ma tre domande fattuali.</p>
+<ul>
+<li><b>Il pricing scala col numero di dipendenti del cliente?</b> Se il ricavo dipende dalle postazioni e il cliente usa l'AI per averne meno, il ricavo è strutturalmente esposto. Consumo o outcome-based: molto meno.</li>
+<li><b>L'output è generabile da un modello?</b> Testo, codice, design semplice, analisi tabellare significano alta esposizione. Verifica formale di un chip, orchestrazione di rete, controlli di sicurezza in ambiente regolamentato significano bassa.</li>
+<li><b>Il valore sta nei dati proprietari o nel software?</b> Se il dataset è irriproducibile, l'AI è complemento e non sostituto.</li>
+</ul>
+<div class="caution"><b>La revisione da fare.</b> La dislocazione sta quasi tutta dove abbiamo deciso di non guardare: tre nomi su sedici oltre il 20% nel bucket basso, otto su tredici nel medio, cinque su nove nell'alto con i due drawdown più profondi dell'universo. Escludere il bucket alto rimuove gran parte dell'opportunità insieme al rischio. Meglio alzare la barra che vietare l'accesso: il bucket alto entra se supera test aggiuntivi — pricing non a postazione, crescita che accelera nonostante la narrativa, o evidenza che l'AI stia aumentando l'uso del prodotto anziché sostituirlo.</div>
+
+<h2>I cinque archetipi</h2>
+<p>I dati non dicono perché un titolo è sceso, ma dicono la forma del ribasso, e ogni archetipo ha una forma diversa. Quattro variabili discriminano: dispersione fra i peer, forma del calo, data del gap maggiore, direzione delle stime.</p>
+<table class="gt">
+<thead><tr><th>Archetipo</th><th>Firma nei dati</th><th>Test</th></tr></thead>
+<tbody>
+<tr><td>Contagio narrativo</td><td>Calo diffuso su tutto il gruppo, stime intatte, nessun evento societario</td><td>Quanta parte reale dei ricavi è davvero esposta alla tesi?</td></tr>
+<tr><td>Ritracciamento in trend</td><td>Momentum di settore positivo a 12 mesi, calo recente, stime ancora in salita</td><td>Il ciclo sottostante è intatto?</td></tr>
+<tr><td>Shock esogeno</td><td>Calo concentrato su una data macro, più settori colpiti insieme</td><td>Impatto reale sull'utile contro reazione del prezzo</td></tr>
+<tr><td>Contagio per associazione</td><td>Il gap cade sulla trimestrale di un peer, non sua</td><td>Il problema del peer è specifico o di categoria?</td></tr>
+<tr><td>Incidente idiosincratico</td><td>Gap sulla propria data, peer fermi, drawdown quasi tutto residuo</td><td>Evento isolato o inizio di trend?</td></tr>
+<tr><td>Declino secolare</td><td>Discesa lenta senza gap, margine lordo in calo</td><td>Anti-archetipo: si scarta sempre</td></tr>
+</tbody></table>
+
+<h2>Stabilizzazione</h2>
+<p>Senza catalizzatore datato serve una disciplina che sostituisca il timing, altrimenti si compra troppo presto — e in un de-rating strutturale troppo presto costa il 25%. Servono almeno due segnali su quattro: assenza di nuovi minimi per quattro-sei settimane, forza relativa contro l'ETF di settore in ripresa, volumi calanti nelle sedute negative, divergenza positiva dell'RSI.</p>
+<div class="caution"><b>Onestà sui segnali di prezzo.</b> L'evidenza empirica su questi indicatori va da debole a moderata, molto più fragile dei filtri fondamentali. Vanno usati come conferma per non entrare troppo presto, mai come ragione per entrare. Se i fondamentali dicono no, nessun segnale tecnico ribalta la decisione.</p></div>
+
+<h2>Il macro: dove agisce e dove no</h2>
+<p>Il macro non deve mai entrare nella scelta fra un titolo e l'altro dello stesso settore: i tassi reali colpiscono tutto il software nello stesso momento e nella stessa direzione, quindi non discriminano. Agisce a tre livelli, tutti sopra il titolo singolo: come cancello di regime che decide quanto capitale destinare al settore, come input diagnostico per l'archetipo (se il tasso reale è salito di 100 punti base nel periodo, parte del de-rating è aritmetica di sconto e non giudizio sull'azienda), e come dimensionamento.</p>
+<p>Due sole eccezioni a livello di titolo: la <b>duration</b> — chi genera cassa oggi è molto meno sensibile ai tassi di chi promette profitti nel 2031 — e l'<b>esposizione valutaria</b>. Queste entrano nel confronto fra nomi.</p>
+<p>Gli indicatori: tasso reale a 10 anni, spread di credito, occupazione nei servizi professionali e nell'informazione (non il dato aggregato, che include edilizia e ristorazione e non ha legame con le licenze software), spesa IT dichiarata dagli hyperscaler. Frequenza mensile — guardarlo più spesso genera solo rumore.</p>
+
+<h2>Limiti noti</h2>
+<ul>
+<li><b>Le soglie non sono calibrate.</b> Margine lordo al 65%, Rule of 40 a 30, top 40%, quota di de-rating al 70% sono ipotesi ragionevoli, non numeri validati sui dati. Il modo corretto di fissarle è guardare la distribuzione reale e contare quanti sopravvivono a ogni cancello.</li>
+<li><b>La forma C è approssimata.</b> La compressione del multiplo richiede lo storico dei multipli, che le fonti attuali non conservano. Si ricostruisce dagli utili storici. Se il modello funzionerà male, quasi certamente sarà lì.</li>
+<li><b>Rischio di sopravvivenza nella progettazione.</b> Per ogni nome de-ratato che rimbalza ce n'è uno dove la narrativa aveva ragione, e quello non si ricorda perché è sparito dal radar. L'antidoto è testare le regole sulla popolazione completa che le soddisfaceva negli anni passati, non sui casi che si ricordano.</li>
+<li><b>Un solo settore significa una sola scommessa ripetuta.</b> Se la tesi di settore è sbagliata non si perde su una posizione ma su tutte insieme. Va gestito ruotando il settore, non selezionando meglio.</li>
+</ul>
+</div>`;
+
+render();
+</script>
+</body>
+</html>
